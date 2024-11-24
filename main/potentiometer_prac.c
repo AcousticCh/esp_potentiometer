@@ -18,6 +18,13 @@ static int adc_raw[2][10];
 // static int voltage[2][10];
 
 
+int Dout;
+float Vmax = 3.3;
+int  Dmax;
+float Vout;
+
+
+
 void app_main(void)
 {
 //----------------create adc unit handle----------------------|
@@ -46,7 +53,13 @@ void app_main(void)
 
 //-------------------------------------------------------------|
 
+	//Dmax = 2^chan_config.bitwidth;
+	Dmax = 4096;
 
 	adc_oneshot_read(adc1_handle, ADC1_CHAN0, &adc_raw[0][0]);
-	ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d",ADC_UNIT_1 + 1, ADC1_CHAN0, adc_raw[0][0]);
+	Dout = adc_raw[0][0];
+
+
+	Vout = Dout * Vmax / Dmax;
+	ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %f",ADC_UNIT_1 + 1, ADC1_CHAN0, Vout);
 }
