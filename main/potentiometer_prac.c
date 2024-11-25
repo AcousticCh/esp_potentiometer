@@ -8,16 +8,19 @@
 #include "esp_adc/adc_cali_scheme.h"
 #include "esp_log.h"
 
-
+// CONSTANTS
 #define ADC1_CHAN0 ADC_CHANNEL_0
 #define ADC_ATTEN ADC_ATTEN_DB_12
 
 const static char *TAG = "EXAMPLE";
 
+// variable for list of raw adc readings
 static int adc_raw[2][10];
-// static int voltage[2][10];
 
+//variable to hold calibrated voltage
+static int voltage[2][10];
 
+// Variables for basic voltage conversion
 int Dout;
 float Vmax = 3.3;
 int  Dmax;
@@ -53,13 +56,41 @@ void app_main(void)
 
 //-------------------------------------------------------------|
 
-	//Dmax = 2^chan_config.bitwidth;
+
+//---------------line fitting scheme configuration---------------|
+	adc_cali_handle_t cali_handle;
+	adc_cali_line_fitting_config_t cali_config =
+			{
+				.unit_id = ADC_UNIT_1,
+				.atten = ADC_ATTEN,
+				.bitwidth = ADC_BITWIDTH_DEFAULT,
+			};// end of cali config
+
+	// create handle
+	adc_cali_create_scheme_line_fitting(&cali_config, &cali_handle);
+//---------------------------------------------------------------|
+
+
+
+
+	//max integer for raw adc reading
 	Dmax = 4096;
 
+	//read raw adc data
 	adc_oneshot_read(adc1_handle, ADC1_CHAN0, &adc_raw[0][0]);
+
+	// turn raw reading in array to single integer
 	Dout = adc_raw[0][0];
 
-
+	// simple raw adc to voltage conversion
 	Vout = Dout * Vmax / Dmax;
-	ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %f",ADC_UNIT_1 + 1, ADC1_CHAN0, Vout);
+
+
+	// read line fitting cali in mV
+        adc_cali_raw_to_voltage(cali_handle, adc_raw[0][0], &voltage[0][0]);
+
+
+	// display voltage reading to monitor/log
+	ESP_LOGI(TAG, "ADC%d Channel[%d] Voltage: %d mV",ADC_UNIT_1 + 1, ADC1_CHAN0, voltage[0][0]);
+
 }
