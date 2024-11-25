@@ -12,7 +12,7 @@
 #define ADC1_CHAN0 ADC_CHANNEL_0
 #define ADC_ATTEN ADC_ATTEN_DB_12
 
-const static char *TAG = "EXAMPLE";
+const static char *TAG = "READING";
 
 // variable for list of raw adc readings
 static int adc_raw[2][10];
@@ -76,21 +76,28 @@ void app_main(void)
 	//max integer for raw adc reading
 	Dmax = 4096;
 
-	//read raw adc data
-	adc_oneshot_read(adc1_handle, ADC1_CHAN0, &adc_raw[0][0]);
+	while(1)
+	{
 
-	// turn raw reading in array to single integer
-	Dout = adc_raw[0][0];
+		//read raw adc data
+		adc_oneshot_read(adc1_handle, ADC1_CHAN0, &adc_raw[0][0]);
 
-	// simple raw adc to voltage conversion
-	Vout = Dout * Vmax / Dmax;
+		// turn raw reading in array to single integer
+		Dout = adc_raw[0][0];
+
+		// simple raw adc to voltage conversion
+		Vout = Dout * Vmax / Dmax;
 
 
-	// read line fitting cali in mV
-        adc_cali_raw_to_voltage(cali_handle, adc_raw[0][0], &voltage[0][0]);
+		// read line fitting cali in mV
+        	adc_cali_raw_to_voltage(cali_handle, adc_raw[0][0], &voltage[0][0]);
 
 
-	// display voltage reading to monitor/log
-	ESP_LOGI(TAG, "ADC%d Channel[%d] Voltage: %d mV",ADC_UNIT_1 + 1, ADC1_CHAN0, voltage[0][0]);
+		// display voltage reading to monitor/log
+		ESP_LOGI(TAG, "ADC%d Channel[%d] Voltage: %d mV",ADC_UNIT_1 + 1, ADC1_CHAN0, voltage[0][0]);
+
+
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+	}; // end of while loop
 
 }
